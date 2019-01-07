@@ -3,6 +3,9 @@ acme-dns hook for acmetool
 
 This is a work in progress.
 
+This is an [acmetool](https://github.com/hlandau/acme) DNS validation hook
+script and client for [joohoi's acme-dns server](https://github.com/joohoi/acme-dns).
+
 Quickstart (for octopi)
 -----------------------
 
@@ -21,7 +24,7 @@ Quickstart (for octopi)
 		#bind :::80 v4v6
 		bind :::443 v4v6 ssl crt /var/lib/acme/live/octopi.example.net/haproxy
 * (Optional) Write /var/lib/acme/conf/responses:
-	"acme-enter-email": "dlitz@dlitz.net"
+	"acme-enter-email": "example@example.net"
 	"acme-agreement:https://letsencrypt.org/documents/LE-SA-v1.2-November-15-2017.pdf": true
 * Run acmetool quickstart
 	* Staging

@@ -12,8 +12,7 @@ Quickstart (for octopi)
 * apt install acmetool
 * Install hooks/acme-dns to /etc/acme/hooks/acme-dns
 * Create /etc/default/acme-dns with the following contents (edit for your site):
-	ACMEDNS_REGISTER_URL=https://acme-dns.example.net/register
-	ACMEDNS_UPDATE_URL=https://acme-dns.example.net/update
+	ACMEDNS_SERVER_URL=https://acme-dns.example.net
 * /etc/acme/hooks/acme-dns register octopi.example.net
 * Install the CNAME record in the DNS
 * (Optional) Edit /etc/haproxy/haproxy.cfg (do not restart haproxy; we'll let acmetool do that)

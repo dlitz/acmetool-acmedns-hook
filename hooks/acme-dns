@@ -1,0 +1,133 @@
+#!/bin/bash
+# 2019-01-07 dlitz@dlitz.net
+set -e
+
+acmedns_get_credentials() {
+    local domain="$1"
+    local updateurl fulldomain subdomain username password
+
+    [ -e "$ACMEDNS_REGISTRATIONS_DIR/$domain" ] || return 42
+
+    read -r updateurl < <( cat "$ACMEDNS_REGISTRATIONS_DIR/$domain/updateurl" ; echo )
+    read -r fulldomain < <( cat "$ACMEDNS_REGISTRATIONS_DIR/$domain/fulldomain" ; echo )
+    read -r subdomain < <( cat "$ACMEDNS_REGISTRATIONS_DIR/$domain/subdomain" ; echo )
+    read -r username < <( cat "$ACMEDNS_REGISTRATIONS_DIR/$domain/username" ; echo )
+    read -r password < <( cat "$ACMEDNS_REGISTRATIONS_DIR/$domain/password" ; echo )
+
+    ACMEDNS_UPDATE_URL=$updateurl
+    ACMEDNS_FULLDOMAIN=$fulldomain
+    ACMEDNS_SUBDOMAIN=$subdomain
+    ACMEDNS_USERNAME=$username
+    ACMEDNS_PASSWORD=$password
+
+    return 0
+}
+
+acmedns_encode_request() {
+    python -c 'import json, sys; json.dump(dict(subdomain=sys.argv[1], txt=sys.argv[2]), sys.stdout)' "$@"
+}
+
+acmedns_decode_registration() {
+    local x=$(python3 <( cat <<'EOS'
+import json, re, shlex, sys
+
+regex = re.compile(r"^([A-Za-z0-9_.\-]*)$")
+
+(rawjson,) = sys.argv[1:]
+d = json.loads(rawjson)
+for k in ("subdomain", "username", "password", "fulldomain"):
+    m = regex.match(d[k])
+    v = m.group(1)
+    assert shlex.quote(v) == v
+    print("ACMEDNS_{0}={1}".format(k.upper(), shlex.quote(v)))
+EOS
+) "$@")
+    eval "$x"
+}
+
+ACMEDNS_REGISTER_URL=https://acme-dns.example.net/register
+ACMEDNS_UPDATE_URL=https://acme-dns.example.net/update
+
+[ -e "/etc/default/acme-dns" ] && . /etc/default/acme-dns
+[ -e "/etc/conf.d/acme-dns" ] && . /etc/conf.d/acme-dns
+[ -z "$ACME_STATE_DIR" ] && ACME_STATE_DIR="/var/lib/acme"
+[ -z "$ACMEDNS_STATE_DIR" ] && ACMEDNS_STATE_DIR="$ACME_STATE_DIR/acme-dns"
+
+ACMEDNS_REGISTRATIONS_DIR=$ACMEDNS_STATE_DIR/registrations
+
+EVENT_NAME="$1"
+shift 1
+
+case "$EVENT_NAME" in
+    register)
+        # todo: allowfrom
+        domain="$1"
+        if [ -z "$domain" ] ; then
+            echo >&2 "$0: error: domain must be specified"
+            echo >&2 "Usage: $0 register www.example.com"
+            exit 2
+        fi
+
+        if [ -e "$ACMEDNS_REGISTRATIONS_DIR/$domain" ]; then
+            echo >&2 "$0: error: domain already registered"
+            exit 1
+        fi
+
+        registration=$(curl -fsS -X POST "$ACMEDNS_REGISTER_URL")
+        if [ -z "$registration" ] ; then
+            echo >&2 "$0: error: registration failed"
+            exit 1
+        fi
+        acmedns_decode_registration "$registration"
+
+        umask 022
+
+        if ! [ -d "$ACME_STATE_DIR" ]; then
+            echo >&2 "$0: error: state directory '$ACME_STATE_DIR' not found or not a directory"
+            exit 1
+        fi
+        [ -d "$ACMEDNS_STATE_DIR" ] || mkdir "$ACMEDNS_STATE_DIR"
+
+        # Write configuration to conf/perm
+        if [ "$ACMEDNS_STATE_DIR" = "$ACME_STATE_DIR/acme-dns" ] && ! grep -q '^acme-dns\b' "$ACME_STATE_DIR/conf/perm"; then
+            [ -d "$ACME_STATE_DIR/conf" ] || mkdir "$ACME_STATE_DIR/conf"
+            printf '# The following line was added automatically for acme-dns:\nacme-dns/registrations/*/password 0600 0700\n' >> "$ACME_STATE_DIR/conf/perm"
+        fi
+
+        [ -d "$ACMEDNS_REGISTRATIONS_DIR" ] || mkdir "$ACMEDNS_REGISTRATIONS_DIR"
+        [ -d "$ACMEDNS_REGISTRATIONS_DIR/$domain" ] || mkdir "$ACMEDNS_REGISTRATIONS_DIR/$domain"
+        printf '%s' "$ACMEDNS_UPDATE_URL" > "$ACMEDNS_REGISTRATIONS_DIR/$domain/updateurl"
+        printf '%s' "$ACMEDNS_FULLDOMAIN" > "$ACMEDNS_REGISTRATIONS_DIR/$domain/fulldomain"
+        printf '%s' "$ACMEDNS_SUBDOMAIN" > "$ACMEDNS_REGISTRATIONS_DIR/$domain/subdomain"
+        printf '%s' "$ACMEDNS_USERNAME" > "$ACMEDNS_REGISTRATIONS_DIR/$domain/username"
+        umask 077
+        printf '%s' "$ACMEDNS_PASSWORD" > "$ACMEDNS_REGISTRATIONS_DIR/$domain/password"
+
+        echo " Now set up the DNS record:"
+        echo "$domain. CNAME $ACMEDNS_FULLDOMAIN."
+        exit 0
+        ;;
+
+    challenge-dns-start)
+        domain="$1"
+        acmetool_target_filename="$2"
+        txt_content="$3"
+
+        acmedns_get_credentials "$domain"
+        curl -fsS \
+            -H "X-Api-User: $ACMEDNS_USERNAME" \
+            -K <( printf 'header = "X-Api-Key: %q"' "$ACMEDNS_PASSWORD" ) \
+            -d @<( acmedns_encode_request "$ACMEDNS_SUBDOMAIN" "$txt_content" ) \
+            -X POST "$ACMEDNS_UPDATE_URL" >/dev/null
+        exit 0
+        ;;
+
+    challenge-dns-stop)
+        # do nothing.  The acme-dns server doesn't support deleting challenges anyway.
+        exit 0
+        ;;
+
+    *)
+        exit 42
+        ;;
+esac

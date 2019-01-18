@@ -6,6 +6,13 @@ acmedns_get_credentials() {
     local domain="$1"
     local updateurl fulldomain subdomain username password
 
+    # Try each parent domain name in succession, e.g. a.b.example.com, then
+    # b.example.com, then example.com, then com, then DEFAULT, then give up
+    # and return error code 42.
+    while [ -n "$domain" ] && ! [ -e "$ACMEDNS_REGISTRATIONS_DIR/$domain" ]; do
+        domain=${domain#*.}     # remove the leftmost domain name and try again
+    done
+    [ -n "$domain" ] || domain=DEFAULT
     [ -e "$ACMEDNS_REGISTRATIONS_DIR/$domain" ] || return 42
 
     read -r updateurl < <( cat "$ACMEDNS_REGISTRATIONS_DIR/$domain/updateurl" ; echo )

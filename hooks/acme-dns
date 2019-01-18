@@ -1,5 +1,6 @@
 #!/bin/bash
 # 2019-01-07 dlitz@dlitz.net
+# $Id$
 set -e
 
 acmedns_get_credentials() {

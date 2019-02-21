@@ -113,7 +113,7 @@ case "$EVENT_NAME" in
         printf '%s' "$ACMEDNS_PASSWORD" > "$ACMEDNS_REGISTRATIONS_DIR/$domain/password"
 
         echo " Now set up the DNS record:"
-        echo "$domain. CNAME $ACMEDNS_FULLDOMAIN."
+        echo "_acme-challenge.$domain. CNAME $ACMEDNS_FULLDOMAIN."
         exit 0
         ;;
 

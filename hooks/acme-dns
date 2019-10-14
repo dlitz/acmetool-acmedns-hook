@@ -64,6 +64,13 @@ ACMEDNS_UPDATE_URL=${ACMEDNS_SERVER_URL%/}/update
 
 ACMEDNS_REGISTRATIONS_DIR=$ACMEDNS_STATE_DIR/registrations
 
+if [ "$#" -eq 0 ] || [ "$1" = "--help" ]; then
+    echo >&2 "$0: error: domain must be specified"
+    echo >&2 "Usage: $0 register foo.example.com"
+    echo >&2 "       $0 challenge-dns-start foo.example.com target-file txt-content"
+    exit 2
+fi
+
 EVENT_NAME="$1"
 shift 1
 

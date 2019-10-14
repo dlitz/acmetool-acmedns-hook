@@ -34,7 +34,7 @@ acmedns_get_credentials() {
 }
 
 acmedns_encode_request() {
-    python -c 'import json, sys; json.dump(dict(subdomain=sys.argv[1], txt=sys.argv[2]), sys.stdout)' "$@"
+    python3 -c 'import json, sys; json.dump(dict(subdomain=sys.argv[1], txt=sys.argv[2]), sys.stdout)' "$@"
 }
 
 acmedns_decode_registration() {
@@ -64,6 +64,21 @@ EOS
 ACMEDNS_UPDATE_URL=${ACMEDNS_SERVER_URL%/}/update
 
 ACMEDNS_REGISTRATIONS_DIR=$ACMEDNS_STATE_DIR/registrations
+
+# prerequisites
+missing=
+if ! which python3 >/dev/null; then
+    missing="$missing python3"
+fi
+
+if ! which curl >/dev/null; then
+    missing="$missing curl"
+fi
+
+if [ -n "$missing" ]; then
+    echo >&2" $0: error: missing dependencies: $missing"
+    exit 2
+fi
 
 if [ "$#" -eq 0 ] || [ "$1" = "--help" ]; then
     echo >&2 "$0: error: domain must be specified"

@@ -59,15 +59,18 @@ EOS
 [ -z "$ACMEDNS_STATE_DIR" ] && ACMEDNS_STATE_DIR="$ACME_STATE_DIR/acme-dns"
 [ -z "$ACMEDNS_SERVER_URL" ] && ACMEDNS_SERVER_URL=https://acme-dns.example.net/
 
-ACMEDNS_REGISTER_URL=${ACMEDNS_SERVER_URL%/}/register
 ACMEDNS_UPDATE_URL=${ACMEDNS_SERVER_URL%/}/update
 
 ACMEDNS_REGISTRATIONS_DIR=$ACMEDNS_STATE_DIR/registrations
 
 if [ "$#" -eq 0 ] || [ "$1" = "--help" ]; then
     echo >&2 "$0: error: domain must be specified"
-    echo >&2 "Usage: $0 register foo.example.com"
-    echo >&2 "       $0 challenge-dns-start foo.example.com target-file txt-content"
+    echo >&2 "Usage: $0 register [domain [server-url]]"
+    echo >&2 "       $0 challenge-dns-start domain target-file txt-content"
+    echo >&2 "Examples:"
+    echo >&2 "       $0 register foo.example.com"
+    echo >&2 "       $0 register foo.example.com https://acme-dns.example.net/"
+    echo >&2 "       $0 register DEFAULT https://acme-dns.example.net/"
     exit 2
 fi
 
@@ -77,11 +80,13 @@ shift 1
 case "$EVENT_NAME" in
     register)
         # todo: allowfrom
-        domain="$1"
-        if [ -z "$domain" ] ; then
-            echo >&2 "$0: error: domain must be specified"
-            echo >&2 "Usage: $0 register www.example.com"
-            exit 2
+        domain="${1:-DEFAULT}"
+        server_url="${2:-$ACMEDNS_SERVER_URL}"
+        register_url=${server_url%/}/register
+
+        if ! [ -d "$ACME_STATE_DIR" ]; then
+            echo >&2 "$0: error: state directory '$ACME_STATE_DIR' not found or not a directory"
+            exit 1
         fi
 
         if [ -e "$ACMEDNS_REGISTRATIONS_DIR/$domain" ]; then
@@ -89,7 +94,9 @@ case "$EVENT_NAME" in
             exit 1
         fi
 
-        registration=$(curl -fsS -X POST "$ACMEDNS_REGISTER_URL")
+        echo >&2 "$0: notice: registering domain '$domain' at '$server_url' ..."
+
+        registration=$(curl -fsS -X POST "$register_url")
         if [ -z "$registration" ] ; then
             echo >&2 "$0: error: registration failed"
             exit 1
@@ -98,10 +105,6 @@ case "$EVENT_NAME" in
 
         umask 022
 
-        if ! [ -d "$ACME_STATE_DIR" ]; then
-            echo >&2 "$0: error: state directory '$ACME_STATE_DIR' not found or not a directory"
-            exit 1
-        fi
         [ -d "$ACMEDNS_STATE_DIR" ] || mkdir "$ACMEDNS_STATE_DIR"
 
         # Write configuration to conf/perm

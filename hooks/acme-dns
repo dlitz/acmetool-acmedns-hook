@@ -69,6 +69,7 @@ if [ "$#" -eq 0 ] || [ "$1" = "--help" ]; then
     echo >&2 "$0: error: domain must be specified"
     echo >&2 "Usage: $0 register [domain [server-url]]"
     echo >&2 "       $0 challenge-dns-start domain target-file txt-content"
+    echo >&2 ""
     echo >&2 "Examples:"
     echo >&2 "       $0 register foo.example.com"
     echo >&2 "       $0 register foo.example.com https://acme-dns.example.net/"

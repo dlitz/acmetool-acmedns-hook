@@ -112,8 +112,11 @@ case "$EVENT_NAME" in
         umask 077
         printf '%s' "$ACMEDNS_PASSWORD" > "$ACMEDNS_REGISTRATIONS_DIR/$domain/password"
 
-        echo " Now set up the DNS record:"
+        echo " Now set up the DNS record."
+        echo "  BIND format:"
         echo "_acme-challenge.$domain. CNAME $ACMEDNS_FULLDOMAIN."
+        echo "  tinydns-data format:"
+        echo "C_acme-challenge.$domain:$ACMEDNS_FULLDOMAIN:300"
         exit 0
         ;;
 

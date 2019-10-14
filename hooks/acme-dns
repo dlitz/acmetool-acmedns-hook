@@ -11,7 +11,9 @@ acmedns_get_credentials() {
     # b.example.com, then example.com, then com, then DEFAULT, then give up
     # and return error code 42.
     while [ -n "$domain" ] && ! [ -e "$ACMEDNS_REGISTRATIONS_DIR/$domain" ]; do
+        domain=${domain%.}.     # (append dot)
         domain=${domain#*.}     # remove the leftmost domain name and try again
+        domain=${domain%.}      # (strip trailing dot)
     done
     [ -n "$domain" ] || domain=DEFAULT
     [ -e "$ACMEDNS_REGISTRATIONS_DIR/$domain" ] || return 42

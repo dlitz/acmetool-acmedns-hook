@@ -101,6 +101,7 @@ case "$EVENT_NAME" in
         domain="${1:-DEFAULT}"
         server_url="${2:-$ACMEDNS_SERVER_URL}"
         register_url=${server_url%/}/register
+        ACMEDNS_UPDATE_URL=${server_url%/}/update
 
         if ! [ -d "$ACME_STATE_DIR" ]; then
             echo >&2 "$0: error: state directory '$ACME_STATE_DIR' not found or not a directory"

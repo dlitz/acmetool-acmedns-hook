@@ -11,10 +11,9 @@ mrproper: clean
 
 install:
 	umask 022
-	mkdir -p $(DESTDIR)/usr/lib/acmetool-acmedns-hook
-	#cp -t $(DESTDIR)/usr/lib/acmetool-acmedns-hook hooks/acme-dns
-	git archive --format=tar HEAD hooks/acme-dns | tar -xOf - > $(DESTDIR)/usr/lib/acmetool-acmedns-hook/acme-dns
-	chmod +x $(DESTDIR)/usr/lib/acmetool-acmedns-hook/acme-dns
+	mkdir -p $(DESTDIR)/usr/sbin
+	git archive --format=tar HEAD hooks/acme-dns | tar -xOf - > $(DESTDIR)/usr/sbin/acmetool-acmedns-hook
+	chmod +x $(DESTDIR)/usr/sbin/acmetool-acmedns-hook
 
 	mkdir -p $(DESTDIR)/etc/acme/hooks
 	$(INSTALL) -m0755 hooks/acme-dns.stub $(DESTDIR)/etc/acme/hooks/acme-dns

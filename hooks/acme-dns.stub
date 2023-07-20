@@ -1,2 +1,2 @@
 #!/bin/sh
-exec /usr/lib/acmetool-acmedns-hook/acme-dns "$@"
+exec /usr/sbin/acmetool-acmedns-hook "$@"

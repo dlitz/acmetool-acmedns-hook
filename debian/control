@@ -1,0 +1,18 @@
+Source: acmetool-acmedns-hook
+Section: unknown
+Priority: optional
+Maintainer: Darsey Litzenberger <dlitz@dlitz.net>
+Rules-Requires-Root: no
+Build-Depends:
+ debhelper-compat (= 13),
+Standards-Version: 4.6.2
+Homepage: <insert the upstream URL, if relevant>
+#Vcs-Browser: https://salsa.debian.org/debian/acmetool-acmedns-hook
+#Vcs-Git: https://salsa.debian.org/debian/acmetool-acmedns-hook.git
+
+Package: acmetool-acmedns-hook
+Architecture: all
+Depends:
+ ${misc:Depends},
+Description: <insert up to 60 chars description>
+ <Insert long description, indented with spaces.>

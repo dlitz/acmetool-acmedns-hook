@@ -1,0 +1,5 @@
+/.debhelper/
+/acmetool-acmedns-hook.substvars
+/acmetool-acmedns-hook/
+/debhelper-build-stamp
+/files

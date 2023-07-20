@@ -18,10 +18,6 @@
 %:
 	dh $@
 
-override_dh_installinit:
-	dh_installinit
-	dh_installinit --name=acme-dns
-
 
 # dh_make generated override targets.
 # This is an example for Cmake (see <https://bugs.debian.org/641051>).

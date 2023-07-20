@@ -1,4 +1,4 @@
-# Defaults file for acmetool-acmedns-hook
+# Defaults file for acmetool-acmedns-hook(8)
 #
 # The ACMEDNS_SERVER_URL variable specifies the default joohoi/acme-dns server
 # to use.

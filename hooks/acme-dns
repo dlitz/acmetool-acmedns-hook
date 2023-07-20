@@ -56,7 +56,9 @@ EOS
 }
 
 [ -e "/etc/default/acme-dns" ] && . /etc/default/acme-dns
+[ -e "/etc/default/acmetool-acmedns-hook" ] && . /etc/default/acmetool-acmedns-hook
 [ -e "/etc/conf.d/acme-dns" ] && . /etc/conf.d/acme-dns
+[ -e "/etc/conf.d/acmetool-acmedns-hook" ] && . /etc/conf.d/acmetool-acmedns-hook
 [ -z "$ACME_STATE_DIR" ] && ACME_STATE_DIR="/var/lib/acme"
 [ -z "$ACMEDNS_STATE_DIR" ] && ACMEDNS_STATE_DIR="$ACME_STATE_DIR/acme-dns"
 [ -z "$ACMEDNS_SERVER_URL" ] && ACMEDNS_SERVER_URL=https://acme-dns.example.net/

@@ -17,6 +17,6 @@ install:
 	chmod +x $(DESTDIR)/usr/lib/acmetool-acmedns-hook/acme-dns
 
 	mkdir -p $(DESTDIR)/etc/acme/hooks
-	ln -sT $(DESTDIR)/usr/lib/acmetool-acmedns-hook/acme-dns $(DESTDIR)/etc/acme/hooks/acme-dns
+	ln -sT /usr/lib/acmetool-acmedns-hook/acme-dns $(DESTDIR)/etc/acme/hooks/acme-dns
 
 .PHONY: all install clean

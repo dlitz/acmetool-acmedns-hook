@@ -6,30 +6,20 @@ This is a work in progress.
 This is an [acmetool](https://github.com/hlandau/acme) DNS validation hook
 script and client for [joohoi's acme-dns server](https://github.com/joohoi/acme-dns).
 
-Quickstart (for octopi)
------------------------
+Installation instructions
+=========================
 
-* apt install acmetool
-* Install hooks/acme-dns to /etc/acme/hooks/acme-dns
-* Create /etc/default/acme-dns with the following contents (edit for your site):
-	ACMEDNS_SERVER_URL=https://acme-dns.example.net
-* /etc/acme/hooks/acme-dns register octopi.example.net
-* Install the CNAME record in the DNS
-* (Optional) Edit /etc/haproxy/haproxy.cfg (do not restart haproxy; we'll let acmetool do that)
-	* replace this:
-		bind :::80 v4v6
-		bind :::443 v4v6 ssl crt /etc/ssl/snakeoil.pem
-	* with this:
-		#bind :::80 v4v6
-		bind :::443 v4v6 ssl crt /var/lib/acme/live/octopi.example.net/haproxy
-* (Optional) Write /var/lib/acme/conf/responses:
-	"acme-enter-email": "example@example.net"
-	"acme-agreement:https://letsencrypt.org/documents/LE-SA-v1.2-November-15-2017.pdf": true
-* Run acmetool quickstart
-	* Staging
-	* HOOK
-	* cronjob? no  — systemd takes care of it
-* (Optional) Edit /var/lib/acme/conf/target to change key type from `rsa` to `ecdsa`
-* acmetool want --no-reconcile octopi.example.net
-* systemctl enable acmetool.timer
-* systemctl start acmetool.timer acmetool.service
+Copy the hook script to `/etc/acme/hooks/`.
+
+Command-line usage
+==================
+
+```
+Usage: acmetool-acmedns-hook register [domain [server-url]]
+       acmetool-acmedns-hook challenge-dns-start domain target-file txt-content
+
+Examples:
+       acmetool-acmedns-hook register foo.example.com
+       acmetool-acmedns-hook register foo.example.com https://acme-dns.example.net/
+       acmetool-acmedns-hook register DEFAULT https://acme-dns.example.net/
+```
